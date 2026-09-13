@@ -62,47 +62,30 @@ resource "aws_cloudfront_distribution" "this" {
     response_page_path = "/index.html"
   }
   
-  # ordered_cache_behavior {
-  #   path_pattern     = "/posts/*"
-  #   allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-  #   cached_methods   = ["GET", "HEAD"]
-  #   target_origin_id = local.s3_origin_id
+  ordered_cache_behavior {
+    path_pattern     = "*"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_origin_id
 
-  #   forwarded_values {
-  #     query_string = false
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
 
-  #     cookies {
-  #       forward = "none"
-  #     }
-  #   }
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
 
-  #   min_ttl                = 0
-  #   default_ttl            = 3600
-  #   max_ttl                = 86400
-  #   compress               = true
-  #   viewer_protocol_policy = "redirect-to-https"
-  # }
-
-  #   ordered_cache_behavior {
-  #   path_pattern     = "/projects"
-  #   allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-  #   cached_methods   = ["GET", "HEAD"]
-  #   target_origin_id = local.s3_origin_id
-
-  #   forwarded_values {
-  #     query_string = false
-
-  #     cookies {
-  #       forward = "none"
-  #     }
-  #   }
-
-  #   min_ttl                = 0
-  #   default_ttl            = 3600
-  #   max_ttl                = 86400
-  #   compress               = true
-  #   viewer_protocol_policy = "redirect-to-https"
-  # }
+    function_association {
+      event_type = "viewer-request"
+      function_arn = aws_cloudfront_function.transform.arn
+    }
+  }
 }
 
 resource "aws_cloudfront_origin_access_control" "this" {
