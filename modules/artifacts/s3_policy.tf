@@ -18,29 +18,30 @@ resource "aws_s3_bucket_website_configuration" "this" {
 
 data "aws_iam_policy_document" "origin_bucket_policy" {
   statement {
-    sid    = "AllowCloudFrontServicePrincipalReadWrite"
+    sid    = "AllowPublicRead"
     effect = "Allow"
 
     principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
+      type        = "*"
+      identifiers = ["*"]
     }
-
     actions = [
       "s3:GetObject",
-      "s3:PutObject",
     ]
 
     resources = [
       "${aws_s3_bucket.this.arn}/*",
     ]
 
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.this.arn]
-    }
+
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  block_public_acls   = false
+  block_public_policy = false
 }
 
 resource "aws_s3_bucket_policy" "b" {
